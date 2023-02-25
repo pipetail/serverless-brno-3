@@ -80,7 +80,7 @@ odešle odpovídající počet zpráv do fronty `NotifyConnection`.
 
 ## deployment
 
-Pro nasazení tohoto stacku potřebujete jen `sam-cli` a nějaký AWS account.
+Pro nasazení tohoto stacku potřebujete jen `sst` a nějaký AWS account.
 Samotné nasazení je pak jen o
 
 ```bash
