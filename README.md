@@ -84,8 +84,7 @@ Pro nasazení tohoto stacku potřebujete jen `sam-cli` a nějaký AWS account.
 Samotné nasazení je pak jen o
 
 ```bash
-sam build
-sam deploy --guided
+npx sst deploy --stage production
 ```
 
 Jako výstup `deploy` příkazu dostanete `wss://...` adresu API Gateway
