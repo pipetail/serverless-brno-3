@@ -1,6 +1,8 @@
 package connection
 
 import (
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
@@ -9,6 +11,7 @@ import (
 type Connection struct {
 	ConnectionId string
 	UserId       string
+	Created      time.Time
 }
 
 func New(connectionId string, userId string) Connection {
@@ -32,6 +35,10 @@ func NewWithUserId(userId string) Connection {
 
 // Create add supplied Connection struct to the given DynamoDB table
 func (connection Connection) Create(dynamoDbSvc *dynamodb.DynamoDB, table string) error {
+	// update time
+	connection.Created = time.Now()
+
+	// marshal
 	av, err := dynamodbattribute.MarshalMap(connection)
 	if err != nil {
 		return err
