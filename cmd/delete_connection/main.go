@@ -63,11 +63,23 @@ func handler(d handlerDependencies) func(ctx context.Context, sqsEvent events.SQ
 				return fmt.Errorf("could not parse request: %s", err)
 			}
 
+			// send notification about the deletion into the connection
+			_, err = d.ApiGateway.PostToConnection(&apigatewaymanagementapi.PostToConnectionInput{
+				ConnectionId: aws.String(r.ConnectionId),
+				Data:         []byte("$disconnect"),
+			})
+			if err != nil {
+				d.Logger.Error("could not send deletion notification into the connection",
+					zap.String("connectionId", r.ConnectionId),
+					zap.Error(err),
+				)
+				return err
+			}
+
 			// delete the connection
 			_, err = d.ApiGateway.DeleteConnection(&apigatewaymanagementapi.DeleteConnectionInput{
 				ConnectionId: aws.String(r.ConnectionId),
 			})
-
 			if err != nil {
 				d.Logger.Error("could not delete the connection",
 					zap.String("connectionId", r.ConnectionId),

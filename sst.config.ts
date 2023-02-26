@@ -1,6 +1,7 @@
 import { SSTConfig } from "sst";
-import { Api, WebSocketApi, Table, Function, Queue } from "sst/constructs";
+import { Api, WebSocketApi, Table, Queue } from "sst/constructs";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as sqs from "aws-cdk-lib/aws-sqs";
 
 export default {
   config(_input) {
@@ -56,6 +57,7 @@ export default {
               permissions: [connections, deleteConnection],
               environment: {
                 CONFIG_CONNECTIONS_TABLE_ID: connections.tableName,
+                CONFIG_SQS_DELETE_CONNECTION_URL: deleteConnection.queueUrl,
               },
             }
           },
