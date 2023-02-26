@@ -1,5 +1,6 @@
 import { SSTConfig } from "sst";
 import { Api, WebSocketApi, Table, Function, Queue } from "sst/constructs";
+import * as iam from "aws-cdk-lib/aws-iam";
 
 export default {
   config(_input) {
@@ -18,6 +19,7 @@ export default {
       // queues
       const notifyConnection = new Queue(stack, "notifyConnection");
       const notifyUser = new Queue(stack, "notifyUser");
+      const deleteConnection = new Queue(stack, "deleteConnection");
       
       // REST api
       const api = new Api(stack, "api", {
@@ -51,7 +53,7 @@ export default {
             function: {
               timeout: 10,
               handler: "cmd/connect/main.go",
-              permissions: [connections],
+              permissions: [connections, deleteConnection],
               environment: {
                 CONFIG_CONNECTIONS_TABLE_ID: connections.tableName,
               },
@@ -96,7 +98,7 @@ export default {
         },
       });
 
-      // notify connection  consumer      
+      // notify connection consumer      
       notifyConnection.addConsumer(stack, {
         function: {
           timeout: 10,
@@ -108,7 +110,7 @@ export default {
         }
       });
 
-      // notify user queue / consumer
+      // notify user queue consumer
       notifyUser.addConsumer(stack, {
         function: {
           timeout: 10,
@@ -118,6 +120,30 @@ export default {
             CONFIG_CONNECTIONS_TABLE_ID: connections.tableName,
             CONFIG_SQS_NOTIFY_CONNECTION_URL: notifyConnection.queueUrl,
             CONFIG_USER_ID_INDEX_NAME: userIdIndexName,
+          },
+        }
+      });
+
+      // delete connection consumer
+      deleteConnection.addConsumer(stack, {
+        function: {
+          timeout: 10,
+          handler: "cmd/delete_connection/main.go",
+          permissions: [
+
+            // attach custom policy since the default
+            // _connectionsArn provided by wsApi
+            // is not enough
+            new iam.PolicyStatement({
+              actions: ["execute-api:ManageConnections"],
+              effect: iam.Effect.ALLOW,
+              resources: [
+                wsApi._connectionsArn.replace("/POST/*", "/*"),
+              ],
+            }),
+          ],
+          environment: {
+            CONFIG_API_GATEWAY_ENDPOINT: wsApi.url.replace("wss://", "https://"),
           },
         }
       });
