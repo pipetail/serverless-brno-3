@@ -80,6 +80,7 @@ func handler(d handlerDependencies) func(ctx context.Context, sqsEvent events.SQ
 			_, err = d.ApiGateway.DeleteConnection(&apigatewaymanagementapi.DeleteConnectionInput{
 				ConnectionId: aws.String(r.ConnectionId),
 			})
+
 			if err != nil {
 				d.Logger.Error("could not delete the connection",
 					zap.String("connectionId", r.ConnectionId),

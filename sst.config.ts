@@ -20,7 +20,17 @@ export default {
       // queues
       const notifyConnection = new Queue(stack, "notifyConnection");
       const notifyUser = new Queue(stack, "notifyUser");
-      const deleteConnection = new Queue(stack, "deleteConnection");
+      const deleteConnectionDeadLetter = new Queue(stack, "deleteConnectionDeadLetter");
+      const deleteConnection = new Queue(stack, "deleteConnection", {
+        cdk: {
+          queue: {
+            deadLetterQueue: {
+              queue: deleteConnectionDeadLetter.cdk.queue,
+              maxReceiveCount: 4,
+            },
+          }
+        }
+      });
       
       // REST api
       const api = new Api(stack, "api", {
